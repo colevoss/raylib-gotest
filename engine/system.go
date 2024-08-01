@@ -16,23 +16,14 @@ func (sf SystemFunc) Run() error {
 	return sf()
 }
 
-type SystemType = int
-
-const (
-	Startup SystemType = iota
-	Update
-	LateUpdate
-	Render
-	PostRender
-)
-
 type SystemManager struct {
-	startup    []SystemFunc
-	update     []UpdateFunc
-	lateUpdate []SystemFunc
-	render     []SystemFunc
-	postRender []SystemFunc
-	Pool       *Pool
+	startup      []SystemFunc
+	update       []UpdateFunc
+	lateUpdate   []SystemFunc
+	render       []SystemFunc
+	cameraRender []SystemFunc
+	postRender   []SystemFunc
+	Pool         *Pool
 }
 
 func NewSystemManager(poolCount uint) *SystemManager {
@@ -41,37 +32,41 @@ func NewSystemManager(poolCount uint) *SystemManager {
 	}
 }
 
-func (sm *SystemManager) Startup(system SystemFunc) {
+func (sm *SystemManager) AddStartup(system SystemFunc) {
 	sm.startup = append(sm.startup, system)
 }
 
-func (sm *SystemManager) Update(system UpdateFunc) {
+func (sm *SystemManager) AddUpdate(system UpdateFunc) {
 	sm.update = append(sm.update, system)
 }
 
-func (sm *SystemManager) LateUpdate(system SystemFunc) {
+func (sm *SystemManager) AddLateUpdate(system SystemFunc) {
 	sm.lateUpdate = append(sm.lateUpdate, system)
 }
 
-func (sm *SystemManager) Render(system SystemFunc) {
+func (sm *SystemManager) AddCameraRender(system SystemFunc) {
+	sm.cameraRender = append(sm.cameraRender, system)
+}
+
+func (sm *SystemManager) AddRender(system SystemFunc) {
 	sm.render = append(sm.render, system)
 }
 
-func (sm *SystemManager) PostRender(system SystemFunc) {
+func (sm *SystemManager) AddPostRender(system SystemFunc) {
 	sm.postRender = append(sm.postRender, system)
 }
 
-func (sm *SystemManager) RunStartup() {
+func (sm *SystemManager) Start() {
+	sm.Pool.Start()
+}
+
+func (sm *SystemManager) Startup() {
 	for _, system := range sm.startup {
 		system.Run()
 	}
 }
 
-func (sm *SystemManager) RunUpdate(dt time.Duration) {
-	if len(sm.update) == 0 {
-		return
-	}
-
+func (sm *SystemManager) Update(dt time.Duration) {
 	for _, system := range sm.update {
 		sm.Pool.Add(func() error {
 			system.Update(dt)
@@ -82,11 +77,7 @@ func (sm *SystemManager) RunUpdate(dt time.Duration) {
 	sm.Pool.Wait()
 }
 
-func (sm *SystemManager) RunLateUpdate() {
-	if len(sm.lateUpdate) == 0 {
-		return
-	}
-
+func (sm *SystemManager) LateUpdate() {
 	for _, system := range sm.lateUpdate {
 		sm.Pool.Add(system.Run)
 	}
@@ -94,21 +85,19 @@ func (sm *SystemManager) RunLateUpdate() {
 	sm.Pool.Wait()
 }
 
-func (sm *SystemManager) RunRender() {
-	if len(sm.render) == 0 {
-		return
+func (sm *SystemManager) CameraRender() {
+	for _, system := range sm.cameraRender {
+		system.Run()
 	}
+}
 
+func (sm *SystemManager) Render() {
 	for _, system := range sm.render {
 		system.Run()
 	}
 }
 
-func (sm *SystemManager) RunPostRender() {
-	if len(sm.postRender) == 0 {
-		return
-	}
-
+func (sm *SystemManager) PostRender() {
 	for _, system := range sm.postRender {
 		sm.Pool.Add(system.Run)
 	}
@@ -117,17 +106,17 @@ func (sm *SystemManager) RunPostRender() {
 }
 
 func (sm *SystemManager) Run(dt time.Duration) {
-	sm.RunUpdate(dt)
-	sm.RunLateUpdate()
-	sm.RunRender()
-	sm.RunPostRender()
+	sm.Update(dt)
+	sm.LateUpdate()
+	sm.CameraRender()
+	sm.Render()
+	sm.PostRender()
 }
 
 func (sm *SystemManager) RunWithoutRender(dt time.Duration) {
-	sm.RunUpdate(dt)
-	sm.RunLateUpdate()
-	// sm.RunRender()
-	sm.RunPostRender()
+	sm.Update(dt)
+	sm.LateUpdate()
+	sm.PostRender()
 }
 
 type System interface {

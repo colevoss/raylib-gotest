@@ -62,13 +62,13 @@ func (g *GameImpl) Run() {
 	deltaTime := g.lastTick.Sub(g.start)
 
 	g.sm.Pool.Start()
-	g.sm.RunStartup()
+	g.sm.Startup()
 
 	for !rl.WindowShouldClose() {
 		// input
 
-		g.sm.RunUpdate(deltaTime)
-		g.sm.RunLateUpdate()
+		g.sm.Update(deltaTime)
+		g.sm.LateUpdate()
 
 		// start drawing
 		rl.BeginDrawing()
@@ -78,7 +78,7 @@ func (g *GameImpl) Run() {
 
 		// engine playground
 
-		g.sm.RunRender()
+		g.sm.Render()
 		// g.systemManager.Run(deltaTime)
 
 		// let user camera stuff happen here
@@ -89,7 +89,7 @@ func (g *GameImpl) Run() {
 		rl.DrawFPS(10, 10)
 		rl.EndDrawing()
 
-		g.sm.RunPostRender()
+		g.sm.PostRender()
 
 		deltaTime = time.Now().Sub(g.lastTick)
 		g.lastTick = time.Now()

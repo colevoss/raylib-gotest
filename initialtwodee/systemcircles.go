@@ -77,10 +77,10 @@ func NewMySystem(circles uint, game engine.Game, counter CircleCountSystem) *MyS
 }
 
 func (s *MySystem) Register(manager *engine.SystemManager) {
-	manager.Startup(s.Start)
-	manager.Update(s.Update)
-	manager.Render(s.Draw)
-	manager.PostRender(s.KillCircles)
+	manager.AddStartup(s.Start)
+	manager.AddUpdate(s.Update)
+	manager.AddRender(s.Draw)
+	manager.AddPostRender(s.KillCircles)
 }
 
 func (s *MySystem) StartTimer() {

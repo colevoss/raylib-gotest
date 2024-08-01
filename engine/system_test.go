@@ -27,9 +27,9 @@ func NewTestSystem(count uint) *TestSystem {
 }
 
 func (t *TestSystem) Register(sm *SystemManager) {
-	sm.Startup(t.Start)
-	sm.Update(t.Update)
-	sm.PostRender(t.PostRender)
+	sm.AddStartup(t.Start)
+	sm.AddUpdate(t.Update)
+	sm.AddPostRender(t.PostRender)
 }
 
 func (t *TestSystem) Start() error {
@@ -83,7 +83,7 @@ func benchmarkSystem(vecCount uint, systemCount uint, runCount uint, poolCount u
 	}
 
 	manager.Pool.Start()
-	manager.RunStartup()
+	manager.Startup()
 
 	for n := 0; n < b.N; n++ {
 
@@ -158,7 +158,7 @@ func BenchmarkSystemsWithPool(b *testing.B) {
 			}
 
 			manager.Pool.Start()
-			manager.RunStartup()
+			manager.Startup()
 
 			dt, _ := time.ParseDuration("1ms")
 			for n := 0; n < b.N; n++ {

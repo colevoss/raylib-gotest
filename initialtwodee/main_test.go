@@ -50,7 +50,7 @@ func BenchmarkMySystem(b *testing.B) {
 			mySystem.Register(systemManager)
 
 			systemManager.Pool.Start()
-			systemManager.RunStartup()
+			systemManager.Startup()
 
 			dt, _ := time.ParseDuration("16ms")
 

@@ -32,8 +32,8 @@ func NewDisplaySystem(circleCount int, count *Counter) *DisplaySystem {
 }
 
 func (d *DisplaySystem) Register(manager *engine.SystemManager) {
-	manager.Startup(d.Start)
-	manager.Render(d.Draw)
+	manager.AddStartup(d.Start)
+	manager.AddRender(d.Draw)
 }
 
 func (d *DisplaySystem) Start() error {
